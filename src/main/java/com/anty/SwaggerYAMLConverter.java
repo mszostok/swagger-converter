@@ -1,6 +1,6 @@
 package com.anty;
 
-import com.anty.model.XSDParser;
+import com.anty.model.XSDConverter;
 
 
 public class SwaggerYAMLConverter
@@ -8,7 +8,7 @@ public class SwaggerYAMLConverter
     public static void main(String[] args) {
 
         if (args.length > 0){
-            XSDParser parser = new XSDParser();
+            XSDConverter parser = new XSDConverter();
             parser.convertXSDFileToYAML(args[0]);
         }
     }

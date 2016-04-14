@@ -14,10 +14,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- * Created by mszostok on 12.04.2016.
- */
-public class XSDParser {
+
+public class XSDConverter {
 
     //FIXME need replace space with proper padding
     private final String REF_PATTERN = "        $ref: '#/definitions/{Model}'\n";
@@ -35,7 +33,7 @@ public class XSDParser {
     private StringBuilder stringBuilder;
     private File wadlFile;
 
-    public XSDParser() {
+    public XSDConverter() {
         try {
             stringBuilder = new StringBuilder();
             docBuilderFactory = DocumentBuilderFactory.newInstance();
