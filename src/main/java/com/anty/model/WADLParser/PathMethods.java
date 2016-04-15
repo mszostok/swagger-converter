@@ -1,5 +1,7 @@
 package com.anty.model.WADLParser;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,13 +11,13 @@ import java.util.Map;
 public class PathMethods {
 
     private String path;
-    Map<String, String> methods;
+    Map<String, JsonNode> methods;
 
     public PathMethods() {
-        methods = new HashMap<String, String>();
+        methods = new HashMap<>();
     }
 
-    public void addNewMethod(String type, String responseJSONFormat){
+    public void addNewMethod(String type, JsonNode responseJSONFormat){
         methods.put(type, responseJSONFormat);
     }
     public String getPath() {
@@ -26,7 +28,7 @@ public class PathMethods {
         this.path = path;
     }
 
-    public Map<String, String> getAllMethods() {
+    public Map<String, JsonNode> getAllMethods() {
         return methods;
     }
 }
