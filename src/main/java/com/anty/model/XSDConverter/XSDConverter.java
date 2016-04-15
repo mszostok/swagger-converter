@@ -13,6 +13,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class XSDConverter {
@@ -25,8 +27,7 @@ public class XSDConverter {
             YAMLPadding.ENUM_BODY + "enum:\n";
     private final String ENUM_VARIABLE_PREFIX = YAMLPadding.ENUM_PREFIX + "- ";
 
-    private final String YAML_EXTENSION = ".yaml";
-
+    private final Map<String, String> swaggerDataTypes;
     private DocumentBuilderFactory docBuilderFactory;
     private DocumentBuilder docBuilder;
     private Document doc;
@@ -34,14 +35,28 @@ public class XSDConverter {
     private File WADLFile;
 
     public XSDConverter() {
+        swaggerDataTypes = new HashMap<>();
+        stringBuilder = new StringBuilder();
+        initSwaggerDataType();
         try {
-            stringBuilder = new StringBuilder();
+
             docBuilderFactory = DocumentBuilderFactory.newInstance();
 
             docBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             LOGGER.error("Error while creating document builder", e);
         }
+    }
+
+    private void initSwaggerDataType() {
+        swaggerDataTypes.put("int", "integer\n" + YAMLPadding.MODEL_TYPE + "format: int32");
+        swaggerDataTypes.put("long", "integer\n" + YAMLPadding.MODEL_TYPE + "format: int64");
+        swaggerDataTypes.put("float", "number\n" + YAMLPadding.MODEL_TYPE + "format: float");
+        swaggerDataTypes.put("base64Binary", "string");
+        swaggerDataTypes.put("string", "string");
+        swaggerDataTypes.put("boolean", "boolean");
+
+
     }
 
     private NodeList getNodeListByTag(Node rootNode, String tagName) {
@@ -70,9 +85,11 @@ public class XSDConverter {
                     String type = elem.getAttribute("type");
 
                     LOGGER.info("Parse xsd type to proper swagger type");
-                    if (type.startsWith("xs:"))
-                        stringBuilder.append(YAMLPadding.MODEL_TYPE + "type: " + type.substring(3) + "\n");
-                    else if (type.startsWith("tns:")) {
+                    if (type.startsWith("xs:")) {
+                        type = type.substring(3);
+
+                        stringBuilder.append(YAMLPadding.MODEL_TYPE + "type: " + swaggerDataTypes.get(type) + "\n");
+                    } else if (type.startsWith("tns:")) {
                         stringBuilder.append(REF_PATTERN.replace("{Model}", type.substring(4)));
                     }
                 }
@@ -89,22 +106,21 @@ public class XSDConverter {
 
             Element simpleName = (Element) simpleTypeList.item(j);
 
-            if (simpleName.hasAttributes()) { // add enum only if have some attr
+            if (simpleName.hasAttributes()) { // add enum only if have name attr
                 String name = simpleName.getAttribute("name");
                 NodeList enumNames = getNodeListByTag(simpleTypeList.item(j), "xs:enumeration");
 
-                if(enumNames.getLength() > 0) {
-                    stringBuilder.append("  " + name + ":\n");
-                    stringBuilder.append(ENUM_BODY_HEADER);
+
+                stringBuilder.append("  " + name + ":\n");
+                stringBuilder.append(ENUM_BODY_HEADER);
 
 
-                    for (int i = 0; i < enumNames.getLength(); i++) {
-                        Element enumElem = ((Element) enumNames.item(i));
-                        String value = enumElem.getAttribute("value");
+                for (int i = 0; i < enumNames.getLength(); i++) {
+                    Element enumElem = ((Element) enumNames.item(i));
+                    String value = enumElem.getAttribute("value");
 
-                        if (!value.isEmpty()) {
-                            stringBuilder.append(ENUM_VARIABLE_PREFIX + "\"" + value + "\"" + "\n");
-                        }
+                    if (!value.isEmpty()) {
+                        stringBuilder.append(ENUM_VARIABLE_PREFIX + "\"" + value + "\"" + "\n");
                     }
                 }
             }
@@ -145,9 +161,9 @@ public class XSDConverter {
             parseModelsEnum();
 
         } catch (SAXException e) {
-            LOGGER.error("SAX error or warning:" ,e);
+            LOGGER.error("SAX error or warning:", e);
         } catch (IOException ioe) {
-            LOGGER.error("Error occurred while parsing model or enum from .xsd:" ,ioe);
+            LOGGER.error("Error occurred while parsing model or enum from .xsd:", ioe);
         }
 
         return stringBuilder.toString();
