@@ -89,7 +89,6 @@ public class ConverterService {
             //concatYAMLFile(XSDConverter.getYAML(), JSONConverter.getYamlFromJson(WADLConverter.getJSON()));
             //System.out.println(xsdConverter.getYAML());
 
-
             concatPathAndModel();
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,7 +96,7 @@ public class ConverterService {
     }
 
     public String getYAMLFileResult() {
-        return apiSpecInYAML;
+        return   apiSpecInYAML ;
     }
 
     public void setWADLFile(String WADLFile) {
