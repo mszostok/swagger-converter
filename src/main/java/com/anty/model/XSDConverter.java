@@ -44,7 +44,6 @@ public class XSDConverter {
         }
     }
 
-
     private void saveToFile() {
         try {
             File file = new File(wadlFile.toPath().getFileName() + YAML_EXTENSION);
@@ -138,7 +137,7 @@ public class XSDConverter {
         }
     }
 
-    public void convertXSDFileToYAML(String fileName) {
+    public String  convertXSDFileToYAML(String fileName) {
         try {
             wadlFile = new File(fileName);
             doc = docBuilder.parse(wadlFile);
@@ -147,15 +146,14 @@ public class XSDConverter {
 
             parseModelsEnum();
 
-            System.out.print(stringBuilder.toString());
-
         } catch (SAXException e) {
             e.printStackTrace();
         } catch (IOException ed) {
             ed.printStackTrace();
         }
 
-        saveToFile();
-
+        // saveToFile();
+        return stringBuilder.toString();
     }
+
 }

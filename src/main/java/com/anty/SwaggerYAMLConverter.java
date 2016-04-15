@@ -1,15 +1,18 @@
 package com.anty;
 
-import com.anty.model.XSDConverter;
+import com.anty.service.ConverterService;
 
-
-public class SwaggerYAMLConverter
-{
+public class SwaggerYAMLConverter {
     public static void main(String[] args) {
 
-        if (args.length > 0){
-            XSDConverter parser = new XSDConverter();
-            parser.convertXSDFileToYAML(args[0]);
-        }
+        final String xsdFile = "Powertrain.xsd";
+        final String wadlFile = "PowertrainService.wadl";
+
+        ConverterService converterService = new ConverterService();
+        converterService.setWADLFile(wadlFile);
+        converterService.setXSDFile(xsdFile);
+
+        converterService.execute();
+        System.out.println(converterService.getYAMLFileResult());
     }
 }

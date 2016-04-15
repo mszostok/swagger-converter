@@ -1,4 +1,4 @@
-package com.anty.model;
+package com.anty.model.WADLParser;
 
 
 import org.w3c.dom.Document;
@@ -12,18 +12,25 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class WADLParser {
+    private String globalPathPrefix;
 
     private DocumentBuilderFactory docBuilderFactory;
     private DocumentBuilder docBuilder;
     private Document doc;
-    private StringBuilder stringBuilder;
+    private final StringBuilder stringBuilder;
     private File wadlFile;
+    private final List<PathMethods> processedMethod;
 
     public WADLParser() {
+        stringBuilder = new StringBuilder();
+        processedMethod = new LinkedList<>();
+
         try {
-            stringBuilder = new StringBuilder();
+
             docBuilderFactory = DocumentBuilderFactory.newInstance();
 
             docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -39,31 +46,35 @@ public class WADLParser {
         return nodeList;
     }
 
-    private void processMethodResponses(NodeList response) {
+    private String processMethodResponses(NodeList response) {
 
-        stringBuilder.append("      responses:\n");
+        StringBuilder responseBody = new StringBuilder();
 
         for (int i = 0; i < response.getLength(); ++i) {
+            responseBody.append("      responses:\n");
+
             Element responseStatus = (Element) response.item(i);
             NodeList representation = getNodeListByTag(response.item(i), "representation");
 
-            stringBuilder.append("        " + responseStatus.getAttribute("status") + ":\n");
-            stringBuilder.append("          description: " + " \n ");
+            responseBody.append("        " + responseStatus.getAttribute("status") + ":\n");
+            responseBody.append("          description: " + " \n ");
 
             if (representation.getLength() > 0) {
-                stringBuilder.append("          schema:\n");
-                stringBuilder.append("            $ref: '#/definitions/");
+                responseBody.append("          schema:\n");
+                responseBody.append("            $ref: '#/definitions/");
                 Element representationElem = ((Element) representation.item(0));
                 String elemDef = representationElem.getAttribute("element");
                 if (elemDef.startsWith("v1:")) {
                     elemDef = elemDef.substring(3);
                 }
-                stringBuilder.append(elemDef + "\n");
+                responseBody.append(elemDef + "\n");
             }
         }
+        return responseBody.toString();
     }
 
-    private void processResourceMethods(NodeList resourceMethods) {
+    private PathMethods processResourceMethods(NodeList resourceMethods) {
+        PathMethods pathMethods = new PathMethods();
 
         for (int i = 0; i < resourceMethods.getLength(); ++i) {
 
@@ -73,8 +84,11 @@ public class WADLParser {
 
             NodeList response = getNodeListByTag(resourceMethods.item(i), "response");
 
-            processMethodResponses(response);
+           String responseBody = processMethodResponses(response);
+
+            pathMethods.addNewMethod(methodID.getAttribute("name").toLowerCase(), responseBody);
         }
+        return pathMethods;
     }
 
     private void processResourceTag(NodeList resourceRoot) {
@@ -86,7 +100,9 @@ public class WADLParser {
 
             NodeList resourceMethods = getNodeListByTag(resourceRoot.item(i), "method");
 
-            processResourceMethods(resourceMethods);
+            PathMethods method = processResourceMethods(resourceMethods);
+            method.setPath(globalPathPrefix + resElem.getAttribute("path"));
+            processedMethod.add(method);
         }
     }
 
@@ -96,6 +112,8 @@ public class WADLParser {
             doc = docBuilder.parse(wadlFile);
 
             NodeList resourceRoot = doc.getElementsByTagName("resource");
+
+            globalPathPrefix = "/" + ((Element)resourceRoot.item(0)).getAttribute("path") + "/";
 
             NodeList resourceRootChildNodes = getNodeListByTag(resourceRoot.item(0), "resource");
 
@@ -108,6 +126,10 @@ public class WADLParser {
             ed.printStackTrace();
         }
 
+    }
+
+    public List<PathMethods> getProcessedPathMethod() {
+        return processedMethod;
     }
 
     public String getMethodResponse(){

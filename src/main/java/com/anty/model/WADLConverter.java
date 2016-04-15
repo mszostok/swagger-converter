@@ -1,6 +1,10 @@
 package com.anty.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 
@@ -41,12 +45,16 @@ public class WADLConverter {
         return output.toString();
     }
 
-    public void convertWADLToJSON(String fileName){
+    public JsonNode convertWADLToJSON(String fileName) throws IOException {
         this.fileName = fileName;
 
         executeCommand();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(output.toString());
+        return json;
     }
-    public String getJSON(){
+    public String getJSONString(){
         return output.toString();
     }
 }
