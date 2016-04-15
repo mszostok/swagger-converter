@@ -1,16 +1,14 @@
 package com.anty.service;
 
-import com.anty.model.JSONConverter;
 import com.anty.model.WADLConverter;
 import com.anty.model.WADLParser.PathMethods;
 import com.anty.model.WADLParser.WADLParser;
 import com.anty.model.XSDConverter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import io.swagger.util.Json;
 import io.swagger.util.Yaml;
 
 import java.io.IOException;
@@ -20,6 +18,7 @@ import java.util.Map;
  * Created by indianer on 15.04.2016.
  */
 public class ConverterService {
+    private String SWAGGER_HEADER;
 
     private String XSDFile;
     private String WADLFile;
@@ -35,9 +34,28 @@ public class ConverterService {
         XSDConverter = new XSDConverter();
         WADLConverter = new WADLConverter();
         WADLParser = new WADLParser();
+
+        SWAGGER_HEADER = "swagger: '2.0'\n" +
+                "info:\n" +
+                "  title: Powertrain\n" +
+                "  description: \n" +
+                "  version: \"1.0.0\"\n" +
+                "produces:\n" +
+                "  - application/json\n";
+
     }
 
-    private void concatYAMLFile(String yaml, String yamlFromJson) {
+    private void concatPathAndModel() throws JsonProcessingException {
+        StringBuilder apiBuilder = new StringBuilder();
+        String apiPathYAML = Yaml.mapper().writerWithDefaultPrettyPrinter().writeValueAsString(apiPathInJSON);
+
+        apiBuilder.append(SWAGGER_HEADER);
+        apiBuilder.append("# the domain of the service\n" + apiPathYAML.substring(apiPathYAML.indexOf("host:"), apiPathYAML.indexOf("paths")));
+        apiBuilder.append("# will be prefixed to all paths\n" + apiPathYAML.substring(apiPathYAML.indexOf("basePath:"), apiPathYAML.indexOf("host")));
+        apiBuilder.append(apiPathYAML.substring(apiPathYAML.indexOf("paths:"), apiPathYAML.lastIndexOf("schemes:")));
+        apiBuilder.append(apiModelInYAML);
+
+        apiSpecInYAML = apiBuilder.toString();
     }
 
     public void replaceMethodResponseInApiPath() {
@@ -50,26 +68,10 @@ public class ConverterService {
 
             TreeNode currentPath = paths.get(pathMethods.getPath());
 
-            for (Map.Entry<String, JsonNode> entry : pathMethods.getAllMethods().entrySet()) {
-                //System.out.println("Key : " + entry.getKey() + " Value : " + entry.getValue());
-                TreeNode currentPathMethod = currentPath.get(entry.getKey());
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    JsonNode json = mapper.readTree("{\"phonetype\":\"N95\",\"cat\":\"WP\"}");
-
-                ((ObjectNode) currentPathMethod).put("responses", entry.getValue());
-                TreeNode currentPathMethodResponse = currentPathMethod.get("responses");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-//            pathMethods.getAllMethods().forEach((k, v) -> {
-//                TreeNode currentPathMethod = currentPath.get(k);
-//                ((ObjectNode) currentPathMethod).put("responses", v);
-//                //TreeNode currentPathMethodResponse = currentPathMethod.get("responses");
-//            });
+            pathMethods.getAllMethods().forEach((k, v) -> {
+                TreeNode currentPathMethod = currentPath.get(k);
+                ((ObjectNode) currentPathMethod).put("responses", v);
+            });
 
 
         }
@@ -87,16 +89,15 @@ public class ConverterService {
             //concatYAMLFile(XSDConverter.getYAML(), JSONConverter.getYamlFromJson(WADLConverter.getJSON()));
             //System.out.println(xsdConverter.getYAML());
 
-            String yamlOutput = Yaml.mapper().writerWithDefaultPrettyPrinter().writeValueAsString(apiPathInJSON);
 
-            System.out.println(yamlOutput);
+            concatPathAndModel();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public String getYAMLFileResult() {
-        return null;
+        return apiSpecInYAML;
     }
 
     public void setWADLFile(String WADLFile) {

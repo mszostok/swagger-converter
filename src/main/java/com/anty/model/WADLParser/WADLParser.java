@@ -20,19 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 public class WADLParser {
-    private String globalPathPrefix;
+    private final List<PathMethods> processedMethod;
+    private final Map<String, String> RESPONSE_DESCRIPTION;
 
+    private String globalPathPrefix;
     private DocumentBuilderFactory docBuilderFactory;
     private DocumentBuilder docBuilder;
     private Document doc;
     private File wadlFile;
-    private final List<PathMethods> processedMethod;
-    private final Map<String, String> RESPONSE_DECRIPTION;
+
     public WADLParser() {
         processedMethod = new LinkedList<>();
-        RESPONSE_DECRIPTION = new HashMap<>();
+        RESPONSE_DESCRIPTION = new HashMap<>();
 
         initResponseHashMap();
+
         try {
 
             docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -44,18 +46,24 @@ public class WADLParser {
     }
 
     private void initResponseHashMap(){
-        RESPONSE_DECRIPTION.put("200", "OK");
-        RESPONSE_DECRIPTION.put("201", "Created");
-        RESPONSE_DECRIPTION.put("204", "No Content");
-        RESPONSE_DECRIPTION.put("304", "Not Modified");
-        RESPONSE_DECRIPTION.put("400", "Bad Request");
-        RESPONSE_DECRIPTION.put("401", "Unauthorized");
-        RESPONSE_DECRIPTION.put("403", "Forbidden");
-        RESPONSE_DECRIPTION.put("404", "Not Found");
-        RESPONSE_DECRIPTION.put("409", "Conflict");
-        RESPONSE_DECRIPTION.put("500", "Internal Server Error");
+        RESPONSE_DESCRIPTION.put("200", "OK");
+        RESPONSE_DESCRIPTION.put("201", "Created");
+        RESPONSE_DESCRIPTION.put("204", "No Content");
+        RESPONSE_DESCRIPTION.put("304", "Not Modified");
+        RESPONSE_DESCRIPTION.put("400", "Bad Request");
+        RESPONSE_DESCRIPTION.put("401", "Unauthorized");
+        RESPONSE_DESCRIPTION.put("403", "Forbidden");
+        RESPONSE_DESCRIPTION.put("404", "Not Found");
+        RESPONSE_DESCRIPTION.put("409", "Conflict");
+        RESPONSE_DESCRIPTION.put("500", "Internal Server Error");
     }
 
+    private String capitalizeFirstLetter(String str){
+        if(str.length() > 2) {
+            return str.substring(0, 1).toUpperCase() + str.substring(1);
+        }
+        return str;
+    }
     private NodeList getNodeListByTag(Node rootNode, String tagName) {
         NodeList nodeList = ((Element) rootNode.getChildNodes())
                 .getElementsByTagName(tagName);
@@ -76,18 +84,21 @@ public class WADLParser {
             responseBody.append(i > 0 ? "," : "");
             responseBody.append("\"" + responseStatusCode + "\" : {");
             responseBody.append("\"description\": \"" +
-                    RESPONSE_DECRIPTION.get(responseStatusCode) +
+                    RESPONSE_DESCRIPTION.get(responseStatusCode) +
                     "\" ");
 
             if (representation.getLength() > 0) {
-                responseBody.append(",\"schema\": {");
-                responseBody.append("\"$ref\": \"#/definitions/");
                 Element representationElem = ((Element) representation.item(0));
                 String elemDef = representationElem.getAttribute("element");
-                if (elemDef.startsWith("v1:")) {
-                    elemDef = elemDef.substring(3);
+                if(!elemDef.isEmpty()) { // prevent when representation doesn't contain specified element
+                    responseBody.append(",\"schema\": {");
+                    responseBody.append("\"$ref\": \"#/definitions/");
+
+                    if (elemDef.startsWith("v1:")) {
+                        elemDef = elemDef.substring(3);
+                    }
+                    responseBody.append(capitalizeFirstLetter(elemDef) + "\"}");
                 }
-                responseBody.append(elemDef + "\"}");
             }
 
             responseBody.append("}");
