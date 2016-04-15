@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by indianer on 15.04.2016.
- */
+
 public class PathMethods {
 
     private String path;
@@ -17,9 +15,10 @@ public class PathMethods {
         methods = new HashMap<>();
     }
 
-    public void addNewMethod(String type, JsonNode responseJSONFormat){
+    public void addNewMethod(String type, JsonNode responseJSONFormat) {
         methods.put(type, responseJSONFormat);
     }
+
     public String getPath() {
         return path;
     }

@@ -3,16 +3,14 @@ package com.anty.service;
 import com.anty.model.WADLConverter;
 import com.anty.model.WADLParser.PathMethods;
 import com.anty.model.WADLParser.WADLParser;
-import com.anty.model.XSDConverter;
+import com.anty.model.XSDConverter.XSDConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.util.Yaml;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created by indianer on 15.04.2016.
@@ -34,6 +32,8 @@ public class ConverterService {
         XSDConverter = new XSDConverter();
         WADLConverter = new WADLConverter();
         WADLParser = new WADLParser();
+
+        apiSpecInYAML ="";
 
         SWAGGER_HEADER = "swagger: '2.0'\n" +
                 "info:\n" +
@@ -64,7 +64,7 @@ public class ConverterService {
 
         TreeNode paths = apiPathInJSON.get("paths");
 
-        for (PathMethods pathMethods : WADLParser.getProcessedPathMethod()) {
+        for (PathMethods pathMethods : WADLParser.getProcessedURLsMethod()) {
 
             TreeNode currentPath = paths.get(pathMethods.getPath());
 
@@ -85,13 +85,11 @@ public class ConverterService {
 
             replaceMethodResponseInApiPath();
 
-
-            //concatYAMLFile(XSDConverter.getYAML(), JSONConverter.getYamlFromJson(WADLConverter.getJSON()));
-            //System.out.println(xsdConverter.getYAML());
-
             concatPathAndModel();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
         }
     }
 

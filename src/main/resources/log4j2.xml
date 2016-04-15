@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="WARN">
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <File name="FILE_DEBUG" fileName="logs/swagger-converter-debug.log">
+            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="FILE_INFO" fileName="logs/swagger-converter-info.log">
+            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="FILE_WARN" fileName="logs/swagger-converter-warn.log">
+            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="FILE_ERROR" fileName="logs/swagger-converter-error.log">
+            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </appenders>
+
+    <loggers>
+        <root level="debug">
+            <appender-ref ref="FILE_DEBUG" level="debug"/>
+            <appender-ref ref="FILE_INFO" level="info"/>
+            <appender-ref ref="FILE_WARN" level="warn"/>
+            <appender-ref ref="FILE_ERROR" level="error"/>
+
+            <appender-ref ref="Console" level="error"/>
+        </root>
+    </loggers>
+</configuration>
