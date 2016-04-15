@@ -89,20 +89,22 @@ public class XSDConverter {
 
             Element simpleName = (Element) simpleTypeList.item(j);
 
-            if (simpleName.hasAttributes()) {
+            if (simpleName.hasAttributes()) { // add enum only if have some attr
                 String name = simpleName.getAttribute("name");
-
-                stringBuilder.append("  " + name + ":\n");
-                stringBuilder.append(ENUM_BODY_HEADER);
-
                 NodeList enumNames = getNodeListByTag(simpleTypeList.item(j), "xs:enumeration");
 
-                for (int i = 0; i < enumNames.getLength(); i++) {
-                    Element enumElem = ((Element) enumNames.item(i));
-                    String value = enumElem.getAttribute("value");
+                if(enumNames.getLength() > 0) {
+                    stringBuilder.append("  " + name + ":\n");
+                    stringBuilder.append(ENUM_BODY_HEADER);
 
-                    if (!value.isEmpty()) {
-                        stringBuilder.append(ENUM_VARIABLE_PREFIX + "\"" + value + "\"" + "\n");
+
+                    for (int i = 0; i < enumNames.getLength(); i++) {
+                        Element enumElem = ((Element) enumNames.item(i));
+                        String value = enumElem.getAttribute("value");
+
+                        if (!value.isEmpty()) {
+                            stringBuilder.append(ENUM_VARIABLE_PREFIX + "\"" + value + "\"" + "\n");
+                        }
                     }
                 }
             }
