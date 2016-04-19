@@ -52,7 +52,10 @@ public class CliHandler {
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
 
-        formatter.printHelp("swagger-converter", options);
+        String header = "\nConvert API description from WADL to YAML with concatenating it with xsd file\n\n";
+        String footer = "";
+
+        formatter.printHelp("swagger-converter", header, options, footer, true);
         System.exit(0);
     }
 

@@ -11,9 +11,24 @@ Next step is to create the JAR file by exectue Maven Goal with the following com
  clean compile assembly:single
 ```
 
-### Execute .jar via command line  
+## Execute .jar via command line  
+
+####Command Line
+
+```bash
+$ java -jar SwaggerYAMLConverter.jar -h
+
+usage: swagger-converter [-h] -w <wadlFile> -x <xsdFile>
+
+Convert API description from WADL to YAML with concatenating it with xsd
+file
+ -h,--help              show help
+ -w,--wadl <wadlFile>   WADL file path
+ -x,--xsd <xsdFile>     XSD file path
+
+```
+
 Example:
 ```bash
-$ java -jar SwaggerYAMLConverter.jar fileName.wadl fileName.xsd > swagger.yaml
-
+$ java -jar SwaggerYAMLConverter.jar --wadl fileName.wadl --xsd fileName.xsd > swagger.yaml
 ```
