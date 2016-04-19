@@ -3,8 +3,8 @@ package com.anty.model;
 
 import com.anty.service.ConverterService;
 import org.apache.commons.cli.*;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CliHandler {
     private static final Logger LOGGER = LogManager.getLogger(CliHandler.class);

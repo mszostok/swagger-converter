@@ -1,7 +1,6 @@
 package com.anty;
 
 import com.anty.model.CliHandler;
-import com.anty.service.ConverterService;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -16,7 +15,7 @@ public class SwaggerYAMLConverter {
 
         cliHandler.parse();
         cliHandler.executeParsedCmd();
-        
+
         LOGGER.trace("Exit application");
 
     }
