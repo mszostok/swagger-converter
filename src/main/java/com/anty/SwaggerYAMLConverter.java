@@ -1,5 +1,6 @@
 package com.anty;
 
+import com.anty.model.CliHandler;
 import com.anty.service.ConverterService;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -10,21 +11,12 @@ public class SwaggerYAMLConverter {
 
     public static void main(String[] args) {
         LOGGER.trace("Running  application");
-        if(args.length == 2) {
-            String WADLFile = args[0];
-            String XSDFile = args[1];
 
-            ConverterService converterService = new ConverterService();
+        CliHandler cliHandler = new CliHandler(args);
 
-            LOGGER.info("Set wadl file " + WADLFile);
-            converterService.setWADLFile(WADLFile);
-            LOGGER.info("Set xsd file path to: " + XSDFile);
-            converterService.setXSDFile(XSDFile);
-
-            converterService.execute();
-
-            System.out.println(converterService.getYAMLFileResult());
-        }
+        cliHandler.parse();
+        cliHandler.executeParsedCmd();
+        
         LOGGER.trace("Exit application");
 
     }
