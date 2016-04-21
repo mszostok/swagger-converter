@@ -9,7 +9,7 @@ public enum YAMLPadding {
     ENUM_BODY(6),
     MODEL_BODY(4),
     MODEL_VAR(6),
-    MODEL_TYPE(8);
+    MODEL_ATTR(8);
 
 
     private final String name;

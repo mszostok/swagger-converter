@@ -1,4 +1,4 @@
-package com.anty.model;
+package com.anty.model.util;
 
 
 import com.anty.service.ConverterService;

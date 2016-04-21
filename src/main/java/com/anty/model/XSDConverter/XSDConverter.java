@@ -1,11 +1,9 @@
 package com.anty.model.XSDConverter;
 
+import com.anty.model.util.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -28,7 +26,7 @@ public class XSDConverter {
     private final String ENUM_VARIABLE_PREFIX = YAMLPadding.ENUM_PREFIX + "- ";
 
     private final Map<String, String> swaggerDataTypes;
-    private DocumentBuilderFactory docBuilderFactory;
+    private final Map<String, Command> attributesCollector;
     private DocumentBuilder docBuilder;
     private Document doc;
     private StringBuilder stringBuilder;
@@ -36,11 +34,13 @@ public class XSDConverter {
 
     public XSDConverter() {
         swaggerDataTypes = new HashMap<>();
+        attributesCollector = new HashMap<>();
         stringBuilder = new StringBuilder();
-        initSwaggerDataType();
-        try {
 
-            docBuilderFactory = DocumentBuilderFactory.newInstance();
+        initSwaggerDataType();
+        initVariableCollector();
+        try {
+            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 
             docBuilder = docBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -49,14 +49,16 @@ public class XSDConverter {
     }
 
     private void initSwaggerDataType() {
-        swaggerDataTypes.put("int", "integer\n" + YAMLPadding.MODEL_TYPE + "format: int32");
-        swaggerDataTypes.put("long", "integer\n" + YAMLPadding.MODEL_TYPE + "format: int64");
-        swaggerDataTypes.put("float", "number\n" + YAMLPadding.MODEL_TYPE + "format: float");
+        swaggerDataTypes.put("int", "integer\n" + YAMLPadding.MODEL_ATTR + "format: int32");
+        swaggerDataTypes.put("long", "integer\n" + YAMLPadding.MODEL_ATTR + "format: int64");
+        swaggerDataTypes.put("float", "number\n" + YAMLPadding.MODEL_ATTR + "format: float");
         swaggerDataTypes.put("base64Binary", "string");
         swaggerDataTypes.put("string", "string");
         swaggerDataTypes.put("boolean", "boolean");
+    }
 
-
+    private void initVariableCollector() {
+        attributesCollector.put("type", (param) -> parseType((String) param));
     }
 
     private NodeList getNodeListByTag(Node rootNode, String tagName) {
@@ -68,6 +70,31 @@ public class XSDConverter {
         return nodeList;
     }
 
+    private void parseType(String value) {
+        LOGGER.info("Parse xsd type to proper swagger type");
+        if (value.startsWith("xs:")) {
+            value = value.substring(3);
+
+            stringBuilder.append(YAMLPadding.MODEL_ATTR + "type: " + swaggerDataTypes.get(value) + "\n");
+        } else if (value.startsWith("tns:")) {
+            stringBuilder.append(REF_PATTERN.replace("{Model}", value.substring(4)));
+        }
+    }
+
+    private void collectVariableAttributes(Element currentElement) {
+        NamedNodeMap attr = currentElement.getAttributes();
+
+        for (int i = 0; i < attr.getLength(); ++i) {
+            String name = attr.item(i).getNodeName();
+            if( !"name".equals(name)) {
+                String value = attr.item(i).getNodeValue();
+                if (attributesCollector.containsKey(name)) {
+                    attributesCollector.get(name).collect(value);
+                }
+            }
+        }
+    }
+
     private void parseModelVariables(NodeList elements) {
 
         stringBuilder.append(MODEL_BODY_HEADER);
@@ -75,23 +102,14 @@ public class XSDConverter {
         LOGGER.info("Iterate thought all models variables (elements)");
         for (int i = 0; i < elements.getLength(); i++) {
             Node elemNode = elements.item(i);
-            Element elem = (Element) elemNode.getChildNodes();
+            Element currentElement = (Element) elemNode.getChildNodes();
 
-            if (elem.hasAttributes()) {
-                String name = elem.getAttribute("name");
-
+            if (currentElement.hasAttributes()) {
+                String name = currentElement.getAttribute("name");
                 if (!name.isEmpty()) {
                     stringBuilder.append(YAMLPadding.MODEL_VAR + name + ":\n");
-                    String type = elem.getAttribute("type");
 
-                    LOGGER.info("Parse xsd type to proper swagger type");
-                    if (type.startsWith("xs:")) {
-                        type = type.substring(3);
-
-                        stringBuilder.append(YAMLPadding.MODEL_TYPE + "type: " + swaggerDataTypes.get(type) + "\n");
-                    } else if (type.startsWith("tns:")) {
-                        stringBuilder.append(REF_PATTERN.replace("{Model}", type.substring(4)));
-                    }
+                    collectVariableAttributes(currentElement);
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.anty;
 
-import com.anty.model.CliHandler;
+import com.anty.model.util.CliHandler;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
