@@ -1,3 +1,5 @@
+**⚠️ This project was only a small spike created during internship and it is no longer maintained. Please feel free to fork it and adjust for your needs.**
+
 # swagger-converter
 [![Build Status](https://travis-ci.org/mszostok/swagger-converter.svg?branch=master)](https://travis-ci.org/mszostok/swagger-converter)
 
